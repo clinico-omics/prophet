@@ -1374,7 +1374,7 @@ class TestUserAPI(APITestCase):
         self.client.login(username=self.super_user_name,
                           password=self.super_user_pass)
         response = self.client.get(self.url, format='json')
-        self.assertEqual(1, len(response.data))
+        self.assertEqual(1, response.data.get('count'))
 
 
 class TestRoleAPI(APITestCase):
