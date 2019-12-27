@@ -166,12 +166,12 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PaperList(generics.ListCreateAPIView):
-    pagination_class = None
+    pagination_class = FasterPageNumberPagination
     queryset = Paper.objects.all()
     serializer_class = PaperSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     search_fields = ('title', 'pmid', 'journal', 'doi')
-    ordering_fields = ('pmid',)
+    ordering_fields = ('-pmid',)
     permission_classes = [IsOwnerOrReadOnly]
 
 

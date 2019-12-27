@@ -60,7 +60,7 @@ COPY --from=cleaner --chown=prophet:prophet /prophet /prophet
 VOLUME /data
 ENV DATABASE_URL="sqlite:////data/prophet.db"
 
-ENV DEBUG="True"
+ENV DEBUG="False"
 ENV SECRET_KEY="change-me-in-production"
 ENV PORT="8000"
 ENV WORKERS="2"

@@ -33,7 +33,7 @@ SECRET_KEY = env('SECRET_KEY',
                  'v8sk33sy82!uw3ty=!jjv5vp7=s2phrzw(m(hrn^f7e_#1h2al')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', True)
+DEBUG = env.bool('DEBUG', False)
 
 # True if you want to allow users to be able to create an account
 ALLOW_SIGNUP = env.bool('ALLOW_SIGNUP', True)
@@ -58,8 +58,7 @@ INSTALLED_APPS = [
     'social_django',
     'polymorphic',
     'webpack_loader',
-    'corsheaders',
-    'silk'
+    'corsheaders'
 ]
 
 CLOUD_BROWSER_APACHE_LIBCLOUD_PROVIDER = env('CLOUD_BROWSER_LIBCLOUD_PROVIDER', None)
@@ -83,7 +82,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'applicationinsights.django.ApplicationInsightsMiddleware',
-    'silk.middleware.SilkyMiddleware',
 ]
 
 CORS_ORIGIN_WHITELIST = [
@@ -323,3 +321,9 @@ APPLICATION_INSIGHTS = {
 #
 ## During development only
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# Debug mode
+if DEBUG:
+    INSTALLED_APPS += ('silk', )
+    MIDDLEWARE += ('silk.middleware.SilkyMiddleware', )
