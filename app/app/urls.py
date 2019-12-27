@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.contrib.auth.views import PasswordResetView, LogoutView
@@ -31,6 +32,9 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('v1/', include('api.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [url(r'^silk/', include('silk.urls', namespace='silk'))]
 
 if 'cloud_browser' in settings.INSTALLED_APPS:
     urlpatterns.append(path('cloud-storage/', include('cloud_browser.urls')))
