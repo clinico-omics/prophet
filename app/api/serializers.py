@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Count
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -6,7 +7,7 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 from rest_framework.exceptions import ValidationError
 
 
-from .models import Label, Project, Document, RoleMapping, Role
+from .models import Label, Project, Document, RoleMapping, Role, Paper, Knowledge
 from .models import TextClassificationProject, SequenceLabelingProject, Seq2seqProject
 from .models import DocumentAnnotation, SequenceAnnotation, Seq2seqAnnotation
 
@@ -15,7 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'is_superuser')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'is_superuser', 'password')
+        extra_kwargs = {
+            "password": {
+                'write_only': True
+            }
+         }
 
 
 class LabelSerializer(serializers.ModelSerializer):
@@ -57,6 +63,41 @@ class LabelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Label
         fields = ('id', 'text', 'prefix_key', 'suffix_key', 'background_color', 'text_color')
+
+
+class PaperSerializer(serializers.ModelSerializer):
+    total_knowledges = serializers.SerializerMethodField(read_only=True)
+    id = serializers.SerializerMethodField()
+
+    def get_id(self, paper):
+        return paper.pmid
+
+    def get_total_knowledges(self, paper):
+        knowledge = Knowledge.objects.filter(paper=paper.pmid)
+        total_knowledges = knowledge.count()
+        return total_knowledges
+
+    class Meta:
+        model = Paper
+        fields = ('id', 'abstract', 'authors', 'doi', 'pmid', 'title', 'journal',
+                  'keywords', 'pubdate', 'publication_types', 'mesh_terms', 'chemical_list',
+                  'references', 'delete', 'affiliations', 'pmc', 'country', 'medline_ta',
+                  'nlm_unique_id', 'issn_linking', 'other_id', 'total_knowledges')
+
+
+class KnowledgeSerializer(serializers.ModelSerializer):
+    journal = serializers.CharField(source='paper.journal', read_only=True)
+    # The pmid is better, when you want to index paper.
+    pmid = serializers.IntegerField(source='paper.pmid', read_only=True)
+    # The doi number is better, when you want to download paper.
+    doi = serializers.CharField(source='paper.doi', read_only=True)
+    owner = serializers.CharField(source='author.username', read_only=True)
+
+    class Meta:
+        model = Knowledge
+        fields = ('id', 'created_at', 'updated_at', 'language', 'title', 'paper',
+                  'journal', 'content', 'author', 'owner', 'tags', 'liked_num', 'status',
+                  'doi', 'pmid')
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -119,7 +160,6 @@ class TextClassificationProjectSerializer(ProjectSerializer):
 
 
 class SequenceLabelingProjectSerializer(ProjectSerializer):
-
 
     class Meta:
         model = SequenceLabelingProject

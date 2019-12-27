@@ -184,6 +184,81 @@ class Label(models.Model):
         )
 
 
+class Paper(models.Model):
+    abstract = models.TextField(null=True)
+    authors = models.TextField(null=True)
+    doi = models.CharField(max_length=255, null=True, db_index=True)
+    pmid = models.IntegerField(primary_key=True, db_index=True)
+    title = models.TextField(db_index=True)
+    journal = models.CharField(max_length=255, db_index=True)
+    mesh_terms = models.TextField(null=True)
+    publication_types = models.TextField(null=True)
+    chemical_list = models.TextField(null=True)
+    references = models.TextField(null=True)
+    delete = models.BooleanField(default=False)
+    affiliations = models.TextField(null=True)
+    pmc = models.CharField(max_length=32, null=True, db_index=True)
+    country = models.CharField(max_length=255, null=True)
+    medline_ta = models.CharField(max_length=128, null=True)
+    nlm_unique_id = models.CharField(max_length=16, null=True)
+    issn_linking = models.CharField(max_length=255, null=True)
+    other_id = models.CharField(max_length=255, null=True)
+    keywords = models.TextField(null=True)
+    pubdate = models.CharField(max_length=32, null=True)
+
+    def __str__(self):
+        return str(self.pmid)
+
+    class Meta:
+        ordering = ('pmid', )
+
+
+class FullPaper(models.Model):
+    """
+    In the future, we need the full paper from pmc.
+    """
+    # For images, full paper, tables, references
+    # TODO: don't we need a references? we can use pmid as an index to a paper record.
+    pmc = models.CharField(max_length=32)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
+    full_paper = models.TextField()
+    pmid_cited = models.TextField()
+    doi_cited = models.TextField()
+    references = models.TextField()  # Store json as text for future, more details on https://github.com/titipata/pubmed_parser#parse-pubmed-oa-citation-references
+    images = models.TextField()  # Store json as text for future, more details on https://github.com/titipata/pubmed_parser#parse-pubmed-oa-images-and-captions
+    tables = models.TextField()  # Store json as text for future, more details on https://github.com/titipata/pubmed_parser#parse-pubmed-oa-table-wip
+
+
+class Knowledge(models.Model):
+    LANG_CHOICES = (
+        ('English', 'English'),
+        ('Chinese', 'Chinese')
+    )
+
+    STATUS_CHOICES = (
+        ('Checked', 'Checked'),  # 已审核
+        ('Submitted', 'Submitted'),  # 已提交
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    language = models.CharField(max_length=16, choices=LANG_CHOICES, default='English')
+    title = models.TextField()
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
+    content = models.TextField()
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    tags = models.CharField(max_length=255)
+    liked_num = models.PositiveIntegerField()
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default='Submitted')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        # Each author can only have one version for a paper.
+        unique_together = ('author', 'paper', 'language')
+
+
 class Document(models.Model):
     text = models.TextField()
     project = models.ForeignKey(Project, related_name='documents', on_delete=models.CASCADE)

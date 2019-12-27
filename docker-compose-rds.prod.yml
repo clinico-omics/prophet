@@ -1,0 +1,31 @@
+version: '3.3'
+services:
+  backend:
+    image: prophet_backend
+    volumes:
+      - 'static_volume:/app/staticfiles'
+    env_file: .env
+    networks:
+      - network-backend
+      - network-frontend
+  frontend:
+    image: prophet_frontend
+    volumes:
+      - 'www:/app/dist'
+  nginx:
+    image: prophet_nginx
+    volumes:
+      - 'www:/var/www/html:ro'
+      - 'static_volume:/static'
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+    networks:
+      - network-frontend
+volumes:
+  static_volume: null
+  www: null
+networks:
+  network-backend: null
+  network-frontend: null

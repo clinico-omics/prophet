@@ -11,7 +11,7 @@ services:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "password"
       ADMIN_EMAIL: "admin@example.com"
-      DATABASE_URL: "postgres://doccano:doccano@postgres:5432/doccano?sslmode=disable"
+      DATABASE_URL: "postgres://prophet:prophet@postgres:5432/prophet?sslmode=disable"
       ALLOW_SIGNUP: "False" 
     ports:
       - 8000:8000
@@ -32,9 +32,9 @@ services:
   postgres:
     image: postgres:9.6
     environment:
-      POSTGRES_USER: "doccano"
-      POSTGRES_PASSWORD: "doccano"
-      POSTGRES_DB: "doccano"
+      POSTGRES_USER: "prophet"
+      POSTGRES_PASSWORD: "prophet"
+      POSTGRES_DB: "prophet"
     ports:
       - 5432:5432
 

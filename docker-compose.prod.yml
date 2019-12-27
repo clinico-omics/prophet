@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.3"
 services:
 
   backend:
@@ -10,7 +10,7 @@ services:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "password"
       ADMIN_EMAIL: "admin@example.com"
-      DATABASE_URL: "postgres://doccano:doccano@postgres:5432/doccano?sslmode=disable"
+      DATABASE_URL: "postgres://prophet:prophet@postgres:5432/prophet?sslmode=disable"
       ALLOW_SIGNUP: "False"
       DEBUG: "False"
     depends_on:
@@ -41,9 +41,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_USER: "doccano"
-      POSTGRES_PASSWORD: "doccano"
-      POSTGRES_DB: "doccano"
+      POSTGRES_USER: "prophet"
+      POSTGRES_PASSWORD: "prophet"
+      POSTGRES_DB: "prophet"
     networks:
       - network-backend
 

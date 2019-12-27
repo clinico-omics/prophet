@@ -200,3 +200,4 @@ bundle/
 webpack-stats.json
 
 .vscode
+tools/dev-run.sh

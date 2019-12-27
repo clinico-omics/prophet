@@ -22,6 +22,30 @@ class IsAdminUserAndWriteOnly(BasePermission):
         return IsAdminUser().has_permission(request, view)
 
 
+class IsOwnerOrReadOnly(BasePermission):
+    """
+    Object-level permission to only allow owners of an object to edit it.
+    Assumes the model instance has an `owner` attribute.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in SAFE_METHODS:
+            return True
+
+        if request.user.is_superuser:
+            # Only superuser can add papers into database.
+            return True
+        else:
+            try:
+                # Instance must have an attribute named `author`.
+                # Only owner can add/update/delete knowledges.
+                return obj.author == request.user
+            except:
+                return False
+
+
 class ProjectAdminMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_superuser or is_in_role(

@@ -2,10 +2,12 @@ from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from .views import Me, Features, Users
+from .views import Me, Features, UserList
 from .views import ProjectList, ProjectDetail
 from .views import LabelList, LabelDetail, ApproveLabelsAPI
 from .views import DocumentList, DocumentDetail
+from .views import KnowledgeList, KnowledgeDetail
+from .views import PaperList, PaperDetail
 from .views import AnnotationList, AnnotationDetail
 from .views import TextUploadAPI, TextDownloadAPI, CloudUploadAPI
 from .views import StatisticsAPI
@@ -17,8 +19,12 @@ urlpatterns = [
     path('features', Features.as_view(), name='features'),
     path('cloud-upload', CloudUploadAPI.as_view(), name='cloud_uploader'),
     path('projects', ProjectList.as_view(), name='project_list'),
-    path('users', Users.as_view(), name='user_list'),
+    path('users', UserList.as_view(), name='user_list'),
     path('roles', Roles.as_view(), name='roles'),
+    path('papers', PaperList.as_view(), name='paper_list'),
+    path('knowledges', KnowledgeList.as_view(), name='knowledge_list'),
+    path('papers/<int:pmid>', PaperDetail.as_view(), name='paper_detail'),
+    path('knowledges/<int:id>', KnowledgeDetail.as_view(), name='knowledge_detail'),
     path('projects/<int:project_id>', ProjectDetail.as_view(), name='project_detail'),
     path('projects/<int:project_id>/statistics',
          StatisticsAPI.as_view(), name='statistics'),

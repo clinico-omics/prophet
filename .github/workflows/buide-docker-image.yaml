@@ -1,0 +1,52 @@
+name: Build & Publish Docker Image
+
+on:
+  push:
+    branches:    
+      - tgmc-master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build & Publish Docker Image
+    steps:
+    - name: Configure environment
+      id: config
+      run: |
+        SHA=$(echo ${GITHUB_SHA:0:8})
+        TAG=$(echo $GITHUB_REF | sed -e "s/^refs\/tags//")
+        INVALID_TAG=$(echo $TAG | grep "/" )
+        echo "TAG: ${TAG}, INVALID_TAG: ${INVALID_TAG}, SHA: ${SHA}"
+        if [ -z $INVALID_TAG ]; then
+          VERSION=${TAG}-tgmc-${SHA}
+        else
+          VERSION=tgmc-${SHA}
+        fi
+        echo "VERSION: ${VERSION}"
+        echo ::set-output name=version::$VERSION
+
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Publish docker
+      id: docker
+      uses: zenato/docker-action@master
+      with:
+        username: ${{ secrets.ALIYUN_DOCKER_USERNAME }}
+        password: ${{ secrets.ALIYUN_DOCKER_PASSWORD }}
+        repository: prophet
+        registry: registry.cn-shanghai.aliyuncs.com/pgx-docker-registry
+        tag: ${{ steps.config.outputs.version }}
+
+    - name: Print the name of built image
+      run: echo "${{steps.docker.outputs.image}}"
+
+    - name: Dingtalk Robot Message
+      uses: fifsky/dingtalk-action@master
+      with:
+        url: ${{ secrets.DINGTALK_WEBHOOK }}
+        type: markdown
+        content: |
+          # Prophet镜像构建成功
+          仓库名：prophet:${{ steps.config.outputs.version }}
+        at: Choppy Team

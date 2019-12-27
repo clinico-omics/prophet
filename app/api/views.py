@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth.hashers import make_password
 from django.db.models import Count, F
 from libcloud.base import DriverType, get_driver
 from libcloud.storage.types import ContainerDoesNotExistError, ObjectDoesNotExistError
@@ -14,13 +15,14 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework_csv.renderers import CSVRenderer
 
 from .filters import DocumentFilter
-from .models import Project, Label, Document, RoleMapping, Role
-from .permissions import IsProjectAdmin, IsAnnotatorAndReadOnly, IsAnnotator, IsAnnotationApproverAndReadOnly, IsOwnAnnotation, IsAnnotationApprover
-from .serializers import ProjectSerializer, LabelSerializer, DocumentSerializer, UserSerializer
+from .models import Project, Label, Document, RoleMapping, Role, Paper, Knowledge
+from .permissions import IsProjectAdmin, IsAnnotatorAndReadOnly, IsAnnotator, IsAnnotationApproverAndReadOnly, IsOwnAnnotation, IsAnnotationApprover, IsOwnerOrReadOnly
+from .serializers import ProjectSerializer, LabelSerializer, DocumentSerializer, UserSerializer, PaperSerializer, KnowledgeSerializer
 from .serializers import ProjectPolymorphicSerializer, RoleMappingSerializer, RoleSerializer
 from .utils import CSVParser, ExcelParser, JSONParser, PlainTextParser, CoNLLParser, iterable_to_io
 from .utils import JSONLRenderer
 from .utils import JSONPainter, CSVPainter
+from .custom import FasterPageNumberPagination
 
 IsInProjectReadOnlyOrAdmin = (IsAnnotatorAndReadOnly | IsAnnotationApproverAndReadOnly | IsProjectAdmin)
 IsInProjectOrAdmin = (IsAnnotator | IsAnnotationApprover | IsProjectAdmin)
@@ -161,6 +163,39 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DocumentSerializer
     lookup_url_kwarg = 'doc_id'
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
+
+
+class PaperList(generics.ListCreateAPIView):
+    pagination_class = None
+    queryset = Paper.objects.all()
+    serializer_class = PaperSerializer
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ('title', 'pmid', 'journal', 'doi')
+    ordering_fields = ('pmid',)
+    permission_classes = [IsOwnerOrReadOnly]
+
+
+class PaperDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Paper.objects.all()
+    serializer_class = PaperSerializer
+    lookup_url_kwarg = 'pmid'
+    permission_classes = [IsOwnerOrReadOnly]
+
+
+class KnowledgeList(generics.ListCreateAPIView):
+    queryset = Knowledge.objects.all()
+    serializer_class = KnowledgeSerializer
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ('title', 'status', 'language')
+    ordering_fields = ('created_at', 'updated_at')
+    permission_classes = [IsOwnerOrReadOnly]
+
+
+class KnowledgeDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Knowledge.objects.all()
+    serializer_class = KnowledgeSerializer
+    lookup_url_kwarg = 'id'
+    permission_classes = [IsOwnerOrReadOnly]
 
 
 class AnnotationList(generics.ListCreateAPIView):
@@ -327,14 +362,14 @@ class TextDownloadAPI(APIView):
             raise ValidationError('format {} is invalid.'.format(format))
 
 
-class Users(APIView):
+class UserList(generics.ListCreateAPIView):
+    queryset = User.objects.all()
     permission_classes = [IsAuthenticated & IsProjectAdmin]
+    serializer_class = UserSerializer
 
-    def get(self, request, *args, **kwargs):
-        queryset = User.objects.all()
-        serialized_data = UserSerializer(queryset, many=True).data
-        return Response(serialized_data)
-
+    def perform_create(self, serializer):
+        serializer.validated_data['password'] = make_password(serializer.validated_data['password'])
+        serializer.save()
 
 class Roles(generics.ListCreateAPIView):
     serializer_class = RoleSerializer
