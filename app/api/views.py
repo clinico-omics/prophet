@@ -24,12 +24,14 @@ from .utils import JSONLRenderer
 from .utils import JSONPainter, CSVPainter
 from .custom import FasterPageNumberPagination
 
-IsInProjectReadOnlyOrAdmin = (IsAnnotatorAndReadOnly | IsAnnotationApproverAndReadOnly | IsProjectAdmin)
+IsInProjectReadOnlyOrAdmin = (IsAnnotatorAndReadOnly
+                              | IsAnnotationApproverAndReadOnly
+                              | IsProjectAdmin)
 IsInProjectOrAdmin = (IsAnnotator | IsAnnotationApprover | IsProjectAdmin)
 
 
 class Me(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         serializer = UserSerializer(request.user, context={'request': request})
@@ -37,11 +39,12 @@ class Me(APIView):
 
 
 class Features(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         return Response({
-            'cloud_upload': bool(settings.CLOUD_BROWSER_APACHE_LIBCLOUD_PROVIDER),
+            'cloud_upload':
+            bool(settings.CLOUD_BROWSER_APACHE_LIBCLOUD_PROVIDER),
         })
 
 
@@ -84,7 +87,10 @@ class StatisticsAPI(APIView):
             response.update(progress)
 
         if include:
-            response = {key: value for (key, value) in response.items() if key in include}
+            response = {
+                key: value
+                for (key, value) in response.items() if key in include
+            }
 
         return Response(response)
 
@@ -104,7 +110,9 @@ class StatisticsAPI(APIView):
 
 
 class ApproveLabelsAPI(APIView):
-    permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
+    permission_classes = [
+        IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)
+    ]
 
     def post(self, request, *args, **kwargs):
         approved = self.request.data.get('approved', True)
@@ -137,10 +145,13 @@ class LabelDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class DocumentList(generics.ListCreateAPIView):
     serializer_class = DocumentSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,
+                       filters.OrderingFilter)
     search_fields = ('text', )
-    ordering_fields = ('created_at', 'updated_at', 'doc_annotations__updated_at',
-                       'seq_annotations__updated_at', 'seq2seq_annotations__updated_at')
+    ordering_fields = ('created_at', 'updated_at',
+                       'doc_annotations__updated_at',
+                       'seq_annotations__updated_at',
+                       'seq2seq_annotations__updated_at')
     filter_class = DocumentFilter
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
@@ -149,7 +160,8 @@ class DocumentList(generics.ListCreateAPIView):
 
         queryset = project.documents
         if project.randomize_document_order:
-            queryset = queryset.annotate(sort_id=F('id') % self.request.user.id).order_by('sort_id')
+            queryset = queryset.annotate(
+                sort_id=F('id') % self.request.user.id).order_by('sort_id')
 
         return queryset
 
@@ -167,12 +179,19 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class PaperList(generics.ListCreateAPIView):
     pagination_class = FasterPageNumberPagination
-    queryset = Paper.objects.all()
     serializer_class = PaperSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('title', 'pmid', 'journal', 'doi')
-    ordering_fields = ('pmid',)
     permission_classes = [IsOwnerOrReadOnly]
+    ordering_fields = ['pmid', ]
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+
+    def get_queryset(self):
+        queryset = Paper.objects.all()
+        pmid = self.request.query_params.get("pmid", 0)
+
+        if int(pmid) > 0:
+            queryset = queryset.filter(pmid=pmid)
+
+        return queryset
 
 
 class PaperDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -185,7 +204,8 @@ class PaperDetail(generics.RetrieveUpdateDestroyAPIView):
 class KnowledgeList(generics.ListCreateAPIView):
     queryset = Knowledge.objects.all()
     serializer_class = KnowledgeSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,
+                       filters.OrderingFilter)
     search_fields = ('title', 'status', 'language')
     ordering_fields = ('created_at', 'updated_at')
     permission_classes = [IsOwnerOrReadOnly]
@@ -222,12 +242,17 @@ class AnnotationList(generics.ListCreateAPIView):
         return super().create(request, args, kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(document_id=self.kwargs['doc_id'], user=self.request.user)
+        serializer.save(document_id=self.kwargs['doc_id'],
+                        user=self.request.user)
 
 
 class AnnotationDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'annotation_id'
-    permission_classes = [IsAuthenticated & (((IsAnnotator | IsAnnotationApprover) & IsOwnAnnotation) | IsProjectAdmin)]
+    permission_classes = [
+        IsAuthenticated &
+        (((IsAnnotator | IsAnnotationApprover) & IsOwnAnnotation)
+         | IsProjectAdmin)
+    ]
 
     def get_serializer_class(self):
         project = get_object_or_404(Project, pk=self.kwargs['project_id'])
@@ -242,7 +267,7 @@ class AnnotationDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class TextUploadAPI(APIView):
-    parser_classes = (MultiPartParser,)
+    parser_classes = (MultiPartParser, )
     permission_classes = [IsAuthenticated & IsProjectAdmin]
 
     def post(self, request, *args, **kwargs):
@@ -295,11 +320,14 @@ class CloudUploadAPI(APIView):
             raise ValidationError('query parameter {} is missing'.format(ex))
 
         try:
-            cloud_file = self.get_cloud_object_as_io(cloud_container, cloud_object)
+            cloud_file = self.get_cloud_object_as_io(cloud_container,
+                                                     cloud_object)
         except ContainerDoesNotExistError:
-            raise ValidationError('cloud container {} does not exist'.format(cloud_container))
+            raise ValidationError(
+                'cloud container {} does not exist'.format(cloud_container))
         except ObjectDoesNotExistError:
-            raise ValidationError('cloud object {} does not exist'.format(cloud_object))
+            raise ValidationError(
+                'cloud object {} does not exist'.format(cloud_object))
 
         TextUploadAPI.save_file(
             user=request.user,
@@ -311,7 +339,9 @@ class CloudUploadAPI(APIView):
         next_url = request.query_params.get('next')
 
         if next_url == 'about:blank':
-            return Response(data='', content_type='text/plain', status=status.HTTP_201_CREATED)
+            return Response(data='',
+                            content_type='text/plain',
+                            status=status.HTTP_201_CREATED)
 
         if next_url:
             return redirect(next_url)
@@ -368,8 +398,10 @@ class UserList(generics.ListCreateAPIView):
     serializer_class = UserSerializer
 
     def perform_create(self, serializer):
-        serializer.validated_data['password'] = make_password(serializer.validated_data['password'])
+        serializer.validated_data['password'] = make_password(
+            serializer.validated_data['password'])
         serializer.save()
+
 
 class Roles(generics.ListCreateAPIView):
     serializer_class = RoleSerializer
