@@ -188,7 +188,12 @@ class PaperList(generics.ListCreateAPIView):
         queryset = Paper.objects.all()
         pmid = self.request.query_params.get("pmid", 0)
 
-        if int(pmid) > 0:
+        try:
+            pmid = int(pmid)
+        except:
+            pmid = 0
+        
+        if pmid > 0:
             queryset = queryset.filter(pmid=pmid)
 
         return queryset
