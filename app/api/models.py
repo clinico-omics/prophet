@@ -244,7 +244,7 @@ class Knowledge(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     language = models.CharField(max_length=16, choices=LANG_CHOICES, default='English')
     title = models.TextField()
-    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE, null=True)
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     tags = models.CharField(max_length=255)

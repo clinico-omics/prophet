@@ -215,6 +215,20 @@ class KnowledgeList(generics.ListCreateAPIView):
     ordering_fields = ('created_at', 'updated_at')
     permission_classes = [IsOwnerOrReadOnly]
 
+    def get_queryset(self):
+        queryset = Knowledge.objects.all()
+        pmid = self.request.query_params.get("paper", 0)
+
+        try:
+            pmid = int(pmid)
+        except:
+            pmid = 0
+        
+        if pmid > 0:
+            queryset = queryset.filter(paper=pmid)
+
+        return queryset
+
 
 class KnowledgeDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Knowledge.objects.all()
