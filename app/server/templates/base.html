@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>doccano - Document Annotation Tool</title>
+  <title>Prophet - Document Annotation Tool</title>
 
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
     crossorigin="anonymous">
@@ -44,8 +44,7 @@
     <div class="container">
       <div class="navbar-brand">
         <a class="navbar-item" href="{% url 'index' %}">
-          <img src="{% static 'assets/images/logo.png' %}" width="32" height="32">
-          <b>doccano</b>
+          <img src="{% static 'assets/images/logo.png' %}" height="40" style="max-height: 40px;">
         </a>
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="topNav">
           <span aria-hidden="true"></span>
@@ -73,7 +72,7 @@
               </a>
             </div>
           </div>
-          <a class="navbar-item" href="https://github.com/chakki-works/doccano">
+          <a class="navbar-item" href="https://github.com/clinico-omics/prophet">
             <span>GitHub</span>
           </a>
           {% endif %}
