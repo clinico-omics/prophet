@@ -260,11 +260,20 @@ class Knowledge(models.Model):
 
 
 class Document(models.Model):
+    TYPE_CHOICES = (
+        ('Custom', 'Custom'),
+        ('Knowledge', 'Knowledge'),
+        ('Paper', 'Paper'),
+        ('Case', 'Case')
+    )
+
     text = models.TextField()
     project = models.ForeignKey(Project, related_name='documents', on_delete=models.CASCADE)
     meta = models.TextField(default='{}')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    reference_id = models.CharField(max_length=8, null=True)
+    reference_type = models.CharField(max_length=8, choices=TYPE_CHOICES, default='Custom', null=True)
     annotations_approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):

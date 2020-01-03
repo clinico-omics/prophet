@@ -122,7 +122,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ('id', 'text', 'annotations', 'meta', 'annotation_approver')
+        fields = ('id', 'text', 'annotations', 'meta', 'annotation_approver', 'reference_id', 'reference_type')
 
 
 class ProjectSerializer(serializers.ModelSerializer):

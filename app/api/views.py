@@ -163,6 +163,12 @@ class DocumentList(generics.ListCreateAPIView):
             queryset = queryset.annotate(
                 sort_id=F('id') % self.request.user.id).order_by('sort_id')
 
+        ref_id = self.request.query_params.get("refid", None)
+        ref_type = self.request.query_params.get("reftype", None)
+
+        if ref_id and ref_type:
+            queryset = queryset.filter(reference_id=ref_id, reference_type=ref_type) 
+
         return queryset
 
     def perform_create(self, serializer):
