@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='document',
             name='reference_type',
-            field=models.CharField(choices=[('Custom', 'Custom'), ('Knowledge', 'Knowledge'), ('Paper', 'Paper'), ('Case', 'Case')], default='Custom', max_length=8, null=True),
+            field=models.CharField(choices=[('Custom', 'Custom'), ('Knowledge', 'Knowledge'), ('Paper', 'Paper'), ('Case', 'Case')], default='Custom', max_length=16, null=True),
         ),
     ]

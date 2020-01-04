@@ -125,7 +125,7 @@ export default {
       defaultHttpClient.get('/v1/roles'),
     ]).then(([projectRoles, users, roles]) => {
       this.roleMappings = projectRoles.data;
-      this.allUsers = users.data;
+      this.allUsers = users.data.results;
       this.otherUsers = this.getOtherUsers();
       this.roles = roles.data;
     });

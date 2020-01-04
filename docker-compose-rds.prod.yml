@@ -1,7 +1,8 @@
 version: '3.3'
 services:
   backend:
-    image: prophet_backend
+    build: ./app
+    command: ["/app/tools/run.sh"]
     volumes:
       - 'static_volume:/app/staticfiles'
     env_file: .env
@@ -9,23 +10,23 @@ services:
       - network-backend
       - network-frontend
   frontend:
-    image: prophet_frontend
+    build: ./frontend
     volumes:
-      - 'www:/app/dist'
+      - www:/app/dist
   nginx:
-    image: prophet_nginx
+    build: ./nginx
     volumes:
-      - 'www:/var/www/html:ro'
-      - 'static_volume:/static'
+      - www:/var/www/html:ro
+      - static_volume:/static
     ports:
-      - '80:80'
+      - 80:80
     depends_on:
       - backend
     networks:
       - network-frontend
 volumes:
-  static_volume: null
-  www: null
+  static_volume: 
+  www: 
 networks:
-  network-backend: null
-  network-frontend: null
+  network-backend: 
+  network-frontend: 

@@ -273,7 +273,7 @@ class Document(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     reference_id = models.CharField(max_length=8, null=True)
-    reference_type = models.CharField(max_length=8, choices=TYPE_CHOICES, default='Custom', null=True)
+    reference_type = models.CharField(max_length=16, choices=TYPE_CHOICES, default='Custom', null=True)
     annotations_approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
